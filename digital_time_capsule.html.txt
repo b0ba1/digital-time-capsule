@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Capsule</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+        }
+        header {
+            padding: 20px;
+            background-color: #4a90e2;
+            color: white;
+        }
+        main {
+            padding: 20px;
+        }
+        .capsule {
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 500px;
+        }
+        input, button {
+            padding: 10px;
+            margin-top: 10px;
+            width: 90%;
+            max-width: 300px;
+        }
+        button {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #357ab8;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Digital Time Capsule</h1>
+    </header>
+    <main>
+        <div class="capsule">
+            <h2>Send a Message to Your Future Self</h2>
+            <input type="text" id="videoUrl" placeholder="Paste your video URL here (YouTube, Google Drive)" />
+            <input type="datetime-local" id="unlockDate" />
+            <button onclick="createCapsule()">Create Capsule</button>
+        </div>
+        <div class="capsule" id="capsuleLink" style="display:none;">
+            <h3>Your Capsule is Created!</h3>
+            <p>Save this link and revisit when it's time:</p>
+            <input type="text" id="generatedLink" readonly />
+        </div>
+    </main>
+
+    <script>
+        function createCapsule() {
+            const videoUrl = document.getElementById('videoUrl').value;
+            const unlockDate = new Date(document.getElementById('unlockDate').value).getTime();
+            
+            if (!videoUrl || !unlockDate) {
+                alert('Please fill in all fields.');
+                return;
+            }
+
+            const capsuleData = {
+                videoUrl: videoUrl,
+                unlockDate: unlockDate
+            };
+
+            const encodedData = btoa(JSON.stringify(capsuleData));
+            const link = window.location.origin + window.location.pathname + '?capsule=' + encodedData;
+
+            document.getElementById('generatedLink').value = link;
+            document.getElementById('capsuleLink').style.display = 'block';
+        }
+
+        window.onload = function() {
+            const params = new URLSearchParams(window.location.search);
+            const capsule = params.get('capsule');
+
+            if (capsule) {
+                const capsuleData = JSON.parse(atob(capsule));
+                const now = new Date().getTime();
+
+                if (now >= capsuleData.unlockDate) {
+                    document.body.innerHTML = `<iframe width="560" height="315" src="${capsuleData.videoUrl}" frameborder="0" allowfullscreen></iframe>`;
+                } else {
+                    const unlockDate = new Date(capsuleData.unlockDate);
+                    document.body.innerHTML = '<h2>This capsule is locked!</h2>' +
+                                              '<p>Come back on ' + unlockDate.toLocaleString() + '</p>';
+                }
+            }
+        };
+    </script>
+</body>
+</html>
